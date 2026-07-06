@@ -431,23 +431,30 @@
       if(dx*dx+dy*dy<1)b=0.2; if(y>0.62&&Math.abs((x-0.5)/0.46)<1&&y<0.98)b=Math.min(b,0.25);
       return b;
     }
-    function draw(progress,bold){
+    var mouse={x:0,y:0,active:false}, hoverRAF=null, t0=performance.now();
+    function draw(progress,live){
       ctx.clearRect(0,0,W,H); ctx.fillStyle='#0a0a0a';
+      var R=W*0.32, t=performance.now()-t0;
       for(var r=0;r<rows;r++)for(var c=0;c<cols;c++){
         if(rnd(c,r)>progress)continue;
-        var rad=(1-bright(c,r))*rmax*bold;
-        if(rad>0.5){ctx.beginPath();ctx.arc(c*cw+cw/2,r*ch+ch/2,Math.min(rad,cw/2*1.5),0,6.2832);ctx.fill();}
+        var cx=c*cw+cw/2, cy=r*ch+ch/2, rad=(1-bright(c,r))*rmax;
+        if(live && mouse.active){
+          var dx=cx-mouse.x, dy=cy-mouse.y, d=Math.sqrt(dx*dx+dy*dy);
+          if(d<R){ var f=1-d/R; var wave=0.5+0.5*Math.cos(d*0.085 - t*0.009); rad*=1+f*f*(0.3+1.5*wave); }
+        }
+        if(rad>0.5){ctx.beginPath();ctx.arc(cx,cy,Math.min(rad,cw/2*2.2),0,6.2832);ctx.fill();}
       }
     }
     // reveal animation
     var start=null;
-    function frame(t){if(!start)start=t;var p=Math.min(1,(t-start)/1100);draw(p,1);if(p<1)requestAnimationFrame(frame);}
-    requestAnimationFrame(frame); setTimeout(function(){draw(1,curBold);},1300);
-    // hover bolding
-    var curBold=1,tgt=1,raf=null;
-    function anim(){curBold+=(tgt-curBold)*0.2;draw(1,curBold);if(Math.abs(tgt-curBold)>0.004)raf=requestAnimationFrame(anim);else{curBold=tgt;draw(1,curBold);}}
-    canvas.addEventListener('mouseenter',function(){tgt=1.5;cancelAnimationFrame(raf);raf=requestAnimationFrame(anim);});
-    canvas.addEventListener('mouseleave',function(){tgt=1;cancelAnimationFrame(raf);raf=requestAnimationFrame(anim);});
+    function frame(t){if(!start)start=t;var p=Math.min(1,(t-start)/1100);draw(p,false);if(p<1)requestAnimationFrame(frame);}
+    requestAnimationFrame(frame); setTimeout(function(){if(!mouse.active)draw(1,false);},1300);
+    // cursor-following ripple: waves pulse out from the mouse, enlarging nearby dots
+    function relpos(e){var b=canvas.getBoundingClientRect();mouse.x=(e.clientX-b.left)/b.width*W;mouse.y=(e.clientY-b.top)/b.height*H;}
+    function loop(){draw(1,true);hoverRAF=requestAnimationFrame(loop);}
+    canvas.addEventListener('mouseenter',function(e){relpos(e);mouse.active=true;if(!hoverRAF)loop();});
+    canvas.addEventListener('mousemove',relpos);
+    canvas.addEventListener('mouseleave',function(){mouse.active=false;cancelAnimationFrame(hoverRAF);hoverRAF=null;draw(1,false);});
   })();
 </script>
 </body>
