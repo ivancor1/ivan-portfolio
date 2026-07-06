@@ -73,7 +73,7 @@
   @keyframes fade-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
   .portrait-wrap{display:flex;justify-content:center;align-items:center}
-  canvas.portrait{width:100%;max-width:430px;height:auto;aspect-ratio:5/6;opacity:0;animation:fade-up 1s ease .25s forwards;cursor:crosshair}
+  canvas.portrait{width:100%;max-width:430px;height:auto;aspect-ratio:5/6;opacity:0;animation:fade-up 1s ease .25s forwards;cursor:pointer}
 
   .scrolldown{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);color:var(--faint);animation:bounce 2s infinite}
   .scrolldown svg{width:22px;height:22px;display:block}
@@ -434,13 +434,13 @@
     var mouse={x:0,y:0,active:false}, hoverRAF=null, t0=performance.now();
     function draw(progress,live){
       ctx.clearRect(0,0,W,H); ctx.fillStyle='#0a0a0a';
-      var R=W*0.32, t=performance.now()-t0;
+      var R=W*0.24, t=performance.now()-t0;
       for(var r=0;r<rows;r++)for(var c=0;c<cols;c++){
         if(rnd(c,r)>progress)continue;
         var cx=c*cw+cw/2, cy=r*ch+ch/2, rad=(1-bright(c,r))*rmax;
         if(live && mouse.active){
           var dx=cx-mouse.x, dy=cy-mouse.y, d=Math.sqrt(dx*dx+dy*dy);
-          if(d<R){ var f=1-d/R; var wave=0.5+0.5*Math.cos(d*0.085 - t*0.009); rad*=1+f*f*(0.3+1.5*wave); }
+          if(d<R){ var f=1-d/R; var wave=0.5+0.5*Math.cos(d*0.05 - t*0.0018); rad*=1+f*f*(0.1+0.5*wave); }
         }
         if(rad>0.5){ctx.beginPath();ctx.arc(cx,cy,Math.min(rad,cw/2*2.2),0,6.2832);ctx.fill();}
       }
