@@ -73,7 +73,7 @@
   @keyframes fade-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
   .portrait-wrap{display:flex;justify-content:center;align-items:center}
-  canvas.portrait{width:100%;max-width:430px;height:auto;aspect-ratio:5/6;opacity:0;animation:fade-up 1s ease .25s forwards;cursor:pointer}
+  canvas.portrait{width:100%;max-width:430px;height:auto;aspect-ratio:5/6;opacity:0;animation:fade-up 1s ease .25s forwards;cursor:default}
 
   .scrolldown{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);color:var(--faint);animation:bounce 2s infinite}
   .scrolldown svg{width:22px;height:22px;display:block}
@@ -440,7 +440,7 @@
         var cx=c*cw+cw/2, cy=r*ch+ch/2, rad=(1-bright(c,r))*rmax;
         if(live && mouse.active){
           var dx=cx-mouse.x, dy=cy-mouse.y, d=Math.sqrt(dx*dx+dy*dy);
-          if(d<R){ var f=1-d/R; var wave=0.5+0.5*Math.cos(d*0.05 - t*0.0018); rad*=1+f*f*(0.1+0.5*wave); }
+          if(d<R){ var f=1-d/R; var wave=0.5+0.5*Math.cos(d*0.05 - t*0.0026); rad*=1+f*f*(0.16+0.8*wave); }
         }
         if(rad>0.5){ctx.beginPath();ctx.arc(cx,cy,Math.min(rad,cw/2*2.2),0,6.2832);ctx.fill();}
       }
@@ -451,10 +451,23 @@
     requestAnimationFrame(frame); setTimeout(function(){if(!mouse.active)draw(1,false);},1300);
     // cursor-following ripple: waves pulse out from the mouse, enlarging nearby dots
     function relpos(e){var b=canvas.getBoundingClientRect();mouse.x=(e.clientX-b.left)/b.width*W;mouse.y=(e.clientY-b.top)/b.height*H;}
+    function onFigure(){
+      var cc=Math.floor(mouse.x/cw), rr=Math.floor(mouse.y/ch), mn=1;
+      for(var dr=-1;dr<=1;dr++)for(var dc=-1;dc<=1;dc++){
+        var r2=rr+dr,c2=cc+dc; if(r2<0||c2<0||r2>=rows||c2>=cols)continue;
+        var b=bright(c2,r2); if(b<mn)mn=b;
+      }
+      return mn<0.9;
+    }
     function loop(){draw(1,true);hoverRAF=requestAnimationFrame(loop);}
-    canvas.addEventListener('mouseenter',function(e){relpos(e);mouse.active=true;if(!hoverRAF)loop();});
-    canvas.addEventListener('mousemove',relpos);
-    canvas.addEventListener('mouseleave',function(){mouse.active=false;cancelAnimationFrame(hoverRAF);hoverRAF=null;draw(1,false);});
+    function update(e){
+      relpos(e);
+      if(onFigure()){ mouse.active=true; canvas.style.cursor='pointer'; if(!hoverRAF)loop(); }
+      else { if(mouse.active){mouse.active=false;draw(1,false);} canvas.style.cursor='default'; cancelAnimationFrame(hoverRAF); hoverRAF=null; }
+    }
+    canvas.addEventListener('mouseenter',update);
+    canvas.addEventListener('mousemove',update);
+    canvas.addEventListener('mouseleave',function(){mouse.active=false;cancelAnimationFrame(hoverRAF);hoverRAF=null;canvas.style.cursor='default';draw(1,false);});
   })();
 </script>
 </body>
