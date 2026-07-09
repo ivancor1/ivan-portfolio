@@ -105,7 +105,7 @@
   .vlabel.l1{left:0;right:0;top:64px;color:#111;transition-delay:.34s}
   .vlabel.l2{left:40px;top:254px;width:150px;color:#111;transition-delay:.42s}
   .vlabel.l3{left:258px;top:308px;width:160px;color:#111;transition-delay:.5s}
-  .venn-center{position:absolute;left:0;top:0;width:100%;height:100%;z-index:6;pointer-events:none;
+  .venn-center{position:absolute;left:0;top:0;width:460px;height:460px;z-index:6;pointer-events:none;
     opacity:0;transform:scale(.9);transition:opacity .6s ease .5s,transform .6s cubic-bezier(.2,1.4,.4,1) .5s}
   .venn-stage.in .venn-center{opacity:1;transform:none}
   .venn-center .vimg{opacity:0;transition:opacity .7s ease}
@@ -505,7 +505,7 @@
           for(var i=0;i<scrollRipples.length;i++){
             var sr=scrollRipples[i], age=now-sr.t0, prog=age/SCROLL_RIPPLE_MS;
             var frontY=sr.dir>0?prog*H:H-prog*H, dist=Math.abs(cy-frontY);
-            if(dist<SCROLL_RIPPLE_BAND){ var f2=1-dist/SCROLL_RIPPLE_BAND, env=1-prog; rad*=1+f2*f2*0.9*env; }
+            if(dist<SCROLL_RIPPLE_BAND){ var f2=1-dist/SCROLL_RIPPLE_BAND, env=1-prog; rad*=1+f2*f2*0.4*env; }
           }
         }
         if(rad>0.5){ctx.beginPath();ctx.arc(cx,cy,Math.min(rad,cw/2*2.2),0,6.2832);ctx.fill();}
@@ -516,7 +516,7 @@
     function frame(t){if(!start)start=t;var p=Math.min(1,(t-start)/1100);draw(p,false);if(p<1)requestAnimationFrame(frame);}
     requestAnimationFrame(frame); setTimeout(function(){if(!mouse.active)draw(1,false);},1300);
     // cursor-following ripple: waves pulse out from the mouse/touch point, enlarging nearby dots
-    function relpos(e){var t=e.touches?(e.touches[0]||e.changedTouches[0]):e; if(!t)return; var b=canvas.getBoundingClientRect();mouse.x=(t.clientX-b.left)/b.width*W;mouse.y=(t.clientY-b.top)/b.height*H;}
+    function relpos(e){var b=canvas.getBoundingClientRect();mouse.x=(e.clientX-b.left)/b.width*W;mouse.y=(e.clientY-b.top)/b.height*H;}
     function onFigure(){
       var cc=Math.floor(mouse.x/cw), rr=Math.floor(mouse.y/ch), mn=1;
       for(var dr=-1;dr<=1;dr++)for(var dc=-1;dc<=1;dc++){
@@ -538,9 +538,6 @@
     canvas.addEventListener('mouseenter',update);
     canvas.addEventListener('mousemove',update);
     canvas.addEventListener('mouseleave',function(){mouse.active=false;cancelAnimationFrame(hoverRAF);hoverRAF=null;canvas.style.cursor='default';draw(1,false);});
-    canvas.addEventListener('touchstart',update,{passive:true});
-    canvas.addEventListener('touchmove',update,{passive:true});
-    canvas.addEventListener('touchend',function(){mouse.active=false;cancelAnimationFrame(hoverRAF);hoverRAF=null;draw(1,false);},{passive:true});
 
     // scroll ripple: a wavefront sweeps across the portrait each time the page scrolls, direction-matched
     var scrollRipples=[], lastScrollY=window.scrollY;
@@ -550,7 +547,7 @@
       var rect=canvas.getBoundingClientRect();
       if(rect.bottom<-200||rect.top>innerHeight+200)return;
       scrollRipples.push({dir:dy>0?1:-1,t0:performance.now()});
-      if(scrollRipples.length>4)scrollRipples.shift();
+      if(scrollRipples.length>6)scrollRipples.shift();
       if(!hoverRAF)loop();
     }
     addEventListener('scroll',onScroll,{passive:true});
