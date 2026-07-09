@@ -535,22 +535,26 @@
       if(onFigure()){ mouse.active=true; canvas.style.cursor='pointer'; if(!hoverRAF)loop(); }
       else { if(mouse.active){mouse.active=false;draw(1,false);} canvas.style.cursor='default'; cancelAnimationFrame(hoverRAF); hoverRAF=null; }
     }
-    canvas.addEventListener('mouseenter',update);
-    canvas.addEventListener('mousemove',update);
-    canvas.addEventListener('mouseleave',function(){mouse.active=false;cancelAnimationFrame(hoverRAF);hoverRAF=null;canvas.style.cursor='default';draw(1,false);});
-
-    // scroll ripple: a wavefront sweeps across the portrait each time the page scrolls, direction-matched
-    var scrollRipples=[], lastScrollY=window.scrollY;
-    function onScroll(){
-      var y=window.scrollY, dy=y-lastScrollY; lastScrollY=y;
-      if(Math.abs(dy)<4)return;
-      var rect=canvas.getBoundingClientRect();
-      if(rect.bottom<-200||rect.top>innerHeight+200)return;
-      scrollRipples.push({dir:dy>0?1:-1,t0:performance.now()});
-      if(scrollRipples.length>6)scrollRipples.shift();
-      if(!hoverRAF)loop();
+    var scrollRipples=[];
+    var hasMouse = matchMedia('(hover:hover) and (pointer:fine)').matches;
+    if(hasMouse){
+      canvas.addEventListener('mouseenter',update);
+      canvas.addEventListener('mousemove',update);
+      canvas.addEventListener('mouseleave',function(){mouse.active=false;cancelAnimationFrame(hoverRAF);hoverRAF=null;canvas.style.cursor='default';draw(1,false);});
+    } else {
+      // scroll ripple: a wavefront sweeps across the portrait each time the page scrolls, direction-matched
+      var lastScrollY=window.scrollY;
+      var onScroll=function(){
+        var y=window.scrollY, dy=y-lastScrollY; lastScrollY=y;
+        if(Math.abs(dy)<4)return;
+        var rect=canvas.getBoundingClientRect();
+        if(rect.bottom<-200||rect.top>innerHeight+200)return;
+        scrollRipples.push({dir:dy>0?1:-1,t0:performance.now()});
+        if(scrollRipples.length>6)scrollRipples.shift();
+        if(!hoverRAF)loop();
+      };
+      addEventListener('scroll',onScroll,{passive:true});
     }
-    addEventListener('scroll',onScroll,{passive:true});
   })();
 </script>
 </body>
